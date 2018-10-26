@@ -19,6 +19,9 @@ singlefile: init
 		$(SRC_DIR)/EdgeListNetwork.hpp $(SRC_DIR)/EdgeListNetwork.tpp\
 		$(SRC_DIR)/NetworkBuilder.hpp $(SRC_DIR)/NetworkBuilder.tpp\
 		$(SRC_DIR)/MaxFlowAlgorithm.hpp $(SRC_DIR)/MaxFlowAlgorithm.tpp\
+		$(SRC_DIR)/BlockingFlowAlgorithm.hpp $(SRC_DIR)/BlockingFlowAlgorithm.tpp\
+		$(SRC_DIR)/MalhotraKumarMaheshvari.hpp $(SRC_DIR)/MalhotraKumarMaheshvari.tpp\
+		$(SRC_DIR)/Dinic.hpp $(SRC_DIR)/Dinic.tpp\
 		$(SRC_DIR)/PreflowPush.hpp $(SRC_DIR)/PreflowPush.tpp\
 		$(SRC_DIR)/main.cpp >> $(BIN_DIR)/main.cpp
 
@@ -35,7 +38,9 @@ singlefileTest: init
 		$(SRC_DIR)/NetworkBuilder.hpp $(SRC_DIR)/NetworkBuilder.tpp\
 		$(SRC_DIR)/MaxFlowAlgorithm.hpp $(SRC_DIR)/MaxFlowAlgorithm.tpp\
 		$(SRC_DIR)/PreflowPush.hpp $(SRC_DIR)/PreflowPush.tpp\
+		$(SRC_DIR)/BlockingFlowAlgorithm.hpp $(SRC_DIR)/BlockingFlowAlgorithm.tpp\
 		$(SRC_DIR)/MalhotraKumarMaheshvari.hpp $(SRC_DIR)/MalhotraKumarMaheshvari.tpp\
+		$(SRC_DIR)/Dinic.hpp $(SRC_DIR)/Dinic.tpp\
 		$(SRC_DIR)/test.cpp > $(BIN_DIR)/test.cpp
 
 	sed -i '/#include "/d' $(BIN_DIR)/test.cpp

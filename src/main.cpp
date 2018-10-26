@@ -1,6 +1,8 @@
 #include "EdgeListNetwork.hpp"
 #include "NetworkBuilder.hpp"
 #include "PreflowPush.hpp"
+#include "MalhotraKumarMaheshvari.hpp"
+#include "Dinic.hpp"
 
 using Type = long long;
 const Type Infinity = 1e10;
@@ -69,7 +71,7 @@ void WriteData(Type t)
 int main()
 {
 	std::shared_ptr<Network<Type>> network(ReadData<EdgeListNetwork>(std::cin));
-	PreflowPush<Type> algorithm;
+	Dinic<Type> algorithm;
 	Type answer = Solve(network, algorithm);
 	WriteData(answer);
 

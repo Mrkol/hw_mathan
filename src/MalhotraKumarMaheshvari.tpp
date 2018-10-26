@@ -5,8 +5,7 @@ template<typename T>
 bool MalhotraKumarMaheshvari<T>::inLayeredNetwork(Iterator it)
 {
 	return !deleted_[it->Source()] && !deleted_[it->Target()]
-		&& it->Flow() < it->Capacity()
-		&& this->layer_[it->Target()] == this->layer_[it->Source()] + 1;
+		&& BlockingFlowAlgorithm<T>::inLayeredNetwork(it);
 }
 
 template<typename T>
@@ -57,52 +56,6 @@ void MalhotraKumarMaheshvari<T>::recalcPotential(std::size_t vertice)
 }
 
 template<typename T>
-bool MalhotraKumarMaheshvari<T>::calculateLayeredNetwork()
-{
-	layer_.assign(this->network_->VerticeCount(), InfiniteSize);
-	std::queue<std::size_t> verticeQueue;
-
-	verticeQueue.push(this->network_->Source());
-	this->layer_[this->network_->Source()] = 0;
-
-	while (!verticeQueue.empty())
-	{
-		auto current = verticeQueue.front();
-		verticeQueue.pop();
-		auto it = this->network_->IterateOutgoingEdgesAt(current);
-		while (it)
-		{
-			if (this->layer_[it->Target()] == InfiniteSize && 
-				it->Flow() < it->Capacity())
-			{
-				this->layer_[it->Target()] = layer_[it->Source()] + 1;
-				verticeQueue.push(it->Target());
-			}
-			++it;
-		}
-	}
-
-	return layer_[this->network_->Target()] != InfiniteSize;
-}
-
-template<typename T>
-void MalhotraKumarMaheshvari<T>::findReachable(std::size_t current,
-	std::vector<bool>& visited, bool reverse)
-{
-	visited[current] = true;
-	auto it = reverse
-		? this->network_->IterateIncomingEdgesAt(current)
-		: this->network_->IterateOutgoingEdgesAt(current);
-	while (it)
-	{
-		auto next = reverse ? it->Source() : it->Target();
-		if (!visited[next] && inLayeredNetwork(it))
-			findReachable(next, visited, reverse);
-		++it;
-	}
-}
-
-template<typename T>
 void MalhotraKumarMaheshvari<T>::pushFlowThroughVerticeSingleDirection(
 	std::size_t vertice, T initialPush, std::vector<Iterator>& iterators, bool reversed)
 {
@@ -131,7 +84,6 @@ void MalhotraKumarMaheshvari<T>::pushFlowThroughVerticeSingleDirection(
 
 			it->AddFlow(actualPush);
 
-			//may break with network source/target
 			this->potentialOut_[it->Source()] -= actualPush;
 			this->potentialIn_[it->Target()] -= actualPush;
 			
@@ -155,73 +107,55 @@ void MalhotraKumarMaheshvari<T>::Initialize(std::shared_ptr<Network<T>> network)
 	potentialIn_.resize(network->VerticeCount());
 	potentialOut_.resize(network->VerticeCount());
 
-	layer_.resize(network->VerticeCount());
 	deleted_.resize(network->VerticeCount());
 	
-	MaxFlowAlgorithm<T>::Initialize(network);
+	BlockingFlowAlgorithm<T>::Initialize(network);
 }
 
 template<typename T>
-void MalhotraKumarMaheshvari<T>::Calculate()
+void MalhotraKumarMaheshvari<T>::pushBlockingFlow()
 {
 	auto& network = *this->network_;
 
+	deleted_.assign(network.VerticeCount(), false);
 
-	while (calculateLayeredNetwork())
+	for (std::size_t i = 0; i < network.VerticeCount(); ++i)
 	{
-		deleted_.assign(network.VerticeCount(), false);
-		
-		/*std::vector<bool> reachableFromSource(network.VerticeCount(), false);
-		findReachable(network.Source(), reachableFromSource, false);
+		recalcPotential(i);
+	}
 
-		std::vector<bool> targetReachableFrom(network.VerticeCount(), false);
-		findReachable(network.Target(), targetReachableFrom, true);
+	std::vector<Iterator> forwards;
+	forwards.reserve(network.VerticeCount());
+	std::vector<Iterator> backwards;
+	backwards.reserve(network.VerticeCount());
 
-		for (std::size_t i = 0; i < network.VerticeCount(); ++i)
+	for (std::size_t i = 0; i < network.VerticeCount(); ++i)
+	{
+		forwards.push_back(network.IterateOutgoingEdgesAt(i));
+		backwards.push_back(network.IterateIncomingEdgesAt(i));
+	}
+
+	T blockingFlow = 0;
+	while (!deleted_[network.Source()] && !deleted_[network.Target()])
+	{
+		std::size_t keyVertice = InfiniteSize;
+		for (std::size_t j = 0; j < network.VerticeCount(); ++j)
 		{
-			deleted_[i] =
-				!reachableFromSource[i]
-				|| !targetReachableFrom[i];
-		}*/
-
-		for (std::size_t i = 0; i < network.VerticeCount(); ++i)
-		{
-			recalcPotential(i);
-		}
-
-		std::vector<Iterator> forwards;
-		forwards.reserve(network.VerticeCount());
-		std::vector<Iterator> backwards;
-		backwards.reserve(network.VerticeCount());
-
-		for (std::size_t i = 0; i < network.VerticeCount(); ++i)
-		{
-			forwards.push_back(network.IterateOutgoingEdgesAt(i));
-			backwards.push_back(network.IterateIncomingEdgesAt(i));
-		}
-
-		T blockingFlow = 0;
-		while (!deleted_[network.Source()] && !deleted_[network.Target()])
-		{
-			std::size_t keyVertice = InfiniteSize;
-			for (std::size_t j = 0; j < network.VerticeCount(); ++j)
+			if (!deleted_[j] &&
+				(keyVertice == InfiniteSize || potential(keyVertice) > potential(j)))
 			{
-				if (!deleted_[j] &&
-					(keyVertice == InfiniteSize || potential(keyVertice) > potential(j)))
-				{
-					keyVertice = j;
-				}
+				keyVertice = j;
 			}
-
-			if (potential(keyVertice) != 0)
-			{
-				blockingFlow += potential(keyVertice);
-				T initialPush = potential(keyVertice);
-				pushFlowThroughVerticeSingleDirection(keyVertice, initialPush, forwards, false);
-				pushFlowThroughVerticeSingleDirection(keyVertice, initialPush, backwards, true);
-			}
-
-			deleteVertice(keyVertice);
 		}
+
+		if (potential(keyVertice) != 0)
+		{
+			blockingFlow += potential(keyVertice);
+			T initialPush = potential(keyVertice);
+			pushFlowThroughVerticeSingleDirection(keyVertice, initialPush, forwards, false);
+			pushFlowThroughVerticeSingleDirection(keyVertice, initialPush, backwards, true);
+		}
+
+		deleteVertice(keyVertice);
 	}
 }
