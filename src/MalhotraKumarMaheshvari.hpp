@@ -3,8 +3,6 @@
 #define MALHOTRAKUMARMAHESHVARI_HPP
 
 #include "BlockingFlowAlgorithm.hpp"
-#include <queue>
-#include <functional>
 
 
 template<typename T>

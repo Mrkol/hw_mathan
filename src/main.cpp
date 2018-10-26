@@ -71,7 +71,7 @@ void WriteData(Type t)
 int main()
 {
 	std::shared_ptr<Network<Type>> network(ReadData<EdgeListNetwork>(std::cin));
-	Dinic<Type> algorithm;
+	PreflowPush<Type> algorithm;
 	Type answer = Solve(network, algorithm);
 	WriteData(answer);
 

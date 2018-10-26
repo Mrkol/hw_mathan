@@ -1,4 +1,6 @@
 #include "PreflowPush.hpp"
+#include <cmath>
+
 
 template<typename T>
 void PreflowPush<T>::Initialize(std::shared_ptr<Network<T>> network)

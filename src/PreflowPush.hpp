@@ -3,7 +3,6 @@
 #define PREFLOWPUSH_HPP
 
 #include "MaxFlowAlgorithm.hpp"
-#include <cmath>
 
 
 template<typename T>
