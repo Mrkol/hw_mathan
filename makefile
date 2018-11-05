@@ -15,6 +15,8 @@ test: init $(SRC_DIR)/test.cpp
 singlefile: init 
 	echo "// You are NOT supposed to look at this automatically generated file!!!\n"\
 		> $(BIN_DIR)/main.cpp
+	echo "// https://github.com/Mrkol/hw_mathan\n"\
+		>> $(BIN_DIR)/main.cpp
 	cat $(SRC_DIR)/Network.hpp $(SRC_DIR)/Network.tpp\
 		$(SRC_DIR)/EdgeListNetwork.hpp $(SRC_DIR)/EdgeListNetwork.tpp\
 		$(SRC_DIR)/NetworkBuilder.hpp $(SRC_DIR)/NetworkBuilder.tpp\
